@@ -48,73 +48,39 @@
 
         let vehicleMarkers = {};
 
-    async function fetchVehicles() {
+        async function fetchVehicles() {
             const resultDiv = document.getElementById('searchResult');
             resultDiv.classList.remove('hidden');
-            resultDiv.textContent = '1/2 Načítám databázi z Renderu...';
+            resultDiv.textContent = 'Stahuji data ze serveru...';
 
             try {
-                // 1. Získání vaší databáze
-                const dbResponse = await fetch('/api/db');
-                const vehicleDb = await dbResponse.json();
-
-                resultDiv.textContent = '2/2 Stahuji GPS přes proxy...';
-
-                // Soukromý Google můstek, který obejde veškeré blokace
-                const proxyUrl = 'https://script.google.com/macros/s/AKfycbzRgbRaEFvD3MGzqBdduqRFyHcMCoXGAJ_I8OrFXrq45eH-eez2yydPo_cx7V_tbxyc/exec';
-
-                const gpsResponse = await fetch(proxyUrl);
+                // iPhone komunikuje už jen čistě a napřímo s Renderem
+                const response = await fetch('/api/vehicles');
                 
-                if (!gpsResponse.ok) {
-                    throw new Error(`Proxy hlásí chybu: ${gpsResponse.status}`);
+                if (!response.ok) {
+                    throw new Error('Spojení s backendem selhalo.');
                 }
-
-                const rawText = await gpsResponse.text();
-
-                // Pokud Riga místo dat poslala HTML stránku s chybou
-                if (rawText.toLowerCase().includes('<html>') || rawText.toLowerCase().includes('<!doctype')) {
-                    throw new Error('Riga zablokovala proxy (vrátila HTML).');
-                }
-
-                const mapData = [];
-                const lines = rawText.split('\n');
-                let pocetVozu = 0;
-
-                lines.forEach(line => {
-                    const cols = line.trim().split(',');
-                    if (cols.length < 8) return; 
-
-                    const linka = cols[1];
-                    const lngRaw = parseInt(cols[2], 10);
-                    const latRaw = parseInt(cols[3], 10);
-                    const vehicleId = cols[7];
-
-                    if (!latRaw || !lngRaw || !vehicleId) return;
-
-                    const lat = latRaw / 1000000;
-                    const lng = lngRaw / 1000000;
-                    const dbInfo = vehicleDb[vehicleId] || { typ: "Neznámý typ", trakce: "Neznámá" };
-
-                    mapData.push({ id: vehicleId, lat, lng, linka, rychlost: 0, typ: dbInfo.typ, trakce: dbInfo.trakce });
-                    pocetVozu++;
-                });
-
-                if (pocetVozu === 0) {
-                    throw new Error(`Žádné vozy. Ukázka dat: ${rawText.substring(0, 30)}`);
-                }
-
-                updateMap(mapData);
                 
-                // Pokud vše projde, napíše úspěch a za 3 vteřiny hlášku schová
-                resultDiv.textContent = `✅ Úspěch: Zobrazeno ${pocetVozu} vozů`;
+                const vehicles = await response.json();
+                
+                if (vehicles.error) {
+                    throw new Error(vehicles.error);
+                }
+
+                if (vehicles.length === 0) {
+                    throw new Error('Nepřišla žádná vozidla.');
+                }
+
+                updateMap(vehicles);
+                
+                // Úspěšná hláška zmizí po 3 vteřinách
+                resultDiv.textContent = `✅ Úspěch: Zobrazeno ${vehicles.length} vozů`;
                 resultDiv.style.color = "green";
                 setTimeout(() => { resultDiv.classList.add('hidden'); resultDiv.style.color = "red"; }, 3000);
 
             } catch (error) {
-                // Vypíše přesný důvod selhání na obrazovku
                 resultDiv.textContent = `❌ ${error.message}`;
                 resultDiv.style.color = "red";
-                console.error(error);
             }
         }
         function updateMap(vehicles) {
