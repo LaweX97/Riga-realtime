@@ -48,23 +48,26 @@
 
         let vehicleMarkers = {};
 
-        async function fetchVehicles() {
+       async function fetchVehicles() {
             const resultDiv = document.getElementById('searchResult');
             resultDiv.classList.remove('hidden');
             resultDiv.textContent = 'Stahuji data ze serveru...';
 
             try {
-                // iPhone komunikuje už jen čistě a napřímo s Renderem
                 const response = await fetch('/api/vehicles');
                 
+                // Pokud Render vrátí chybu (např. 502), vytáhneme její přesný text
                 if (!response.ok) {
-                    throw new Error('Spojení s backendem selhalo.');
+                    const errText = await response.text();
+                    // Zkrátíme HTML text, aby se vešel na obrazovku telefonu
+                    const shortErr = errText.substring(0, 50).replace(/</g, '[');
+                    throw new Error(`Chyba Renderu ${response.status}: ${shortErr}`);
                 }
                 
                 const vehicles = await response.json();
                 
                 if (vehicles.error) {
-                    throw new Error(vehicles.error);
+                    throw new Error(`Chyba backendu: ${vehicles.error}`);
                 }
 
                 if (vehicles.length === 0) {
@@ -73,7 +76,6 @@
 
                 updateMap(vehicles);
                 
-                // Úspěšná hláška zmizí po 3 vteřinách
                 resultDiv.textContent = `✅ Úspěch: Zobrazeno ${vehicles.length} vozů`;
                 resultDiv.style.color = "green";
                 setTimeout(() => { resultDiv.classList.add('hidden'); resultDiv.style.color = "red"; }, 3000);
