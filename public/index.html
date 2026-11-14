@@ -84,14 +84,7 @@
         }
         function updateMap(vehicles) {
             vehicles.forEach(v => {
-                const popupContent = `
-                    <div class="vehicle-popup">
-                        <strong>Vůz: ${v.id}</strong><br>
-                        Linka: <span class="bg-gray-200 px-1 rounded font-bold">${v.linka}</span><br>
-                        Typ: ${v.typ}<br>
-                        Trakce: ${v.trakce}
-                    </div>
-                `;
+                const popupContent = `<b>Linka: ${v.linka}</b><br>Ev. č.: ${v.id}<br>Typ: ${v.typ}<br>Trakce: ${v.trakce}<br>Rok výroby: ${v.rok}`;
 
                 if (vehicleMarkers[v.id]) {
                     vehicleMarkers[v.id].setLatLng([v.lat, v.lng]);
