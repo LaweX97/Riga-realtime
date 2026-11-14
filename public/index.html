@@ -54,8 +54,11 @@
                 const dbResponse = await fetch('/api/db');
                 const vehicleDb = await dbResponse.json();
 
-                // 2. Telefon si stáhne živé GPS polohy napřímo z Rigy (obejde cloud)
-                const gpsResponse = await fetch(`https://saraksti.lv/gpsdata.ashx?gps&_=${Date.now()}`);
+                // 2. Obejítí CORS ochrany prohlížeče pomocí frontendové proxy
+                const targetUrl = `https://saraksti.lv/gpsdata.ashx?gps&_=${Date.now()}`;
+                const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+                
+                const gpsResponse = await fetch(proxyUrl);
                 const rawText = await gpsResponse.text();
 
                 const mapData = [];
