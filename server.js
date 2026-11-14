@@ -16,7 +16,14 @@ const GTFS_RT_URL = 'https://saraksti.rigassatiksme.lv/interfaces/gtfs-rt/vehicl
 
 app.get('/api/vehicles', async (req, res) => {
     try {
-        const response = await axios.get(GTFS_RT_URL, { responseType: 'arraybuffer' });
+        const response = await axios.get(GTFS_RT_URL, { 
+            responseType: 'arraybuffer',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/x-protobuf, application/octet-stream, */*'
+            },
+            timeout: 10000
+        });
         const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(response.data));
         const mapData = [];
 
