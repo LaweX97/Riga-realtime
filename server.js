@@ -11,13 +11,12 @@ const vehicleDb = JSON.parse(fs.readFileSync('vehicles.json', 'utf8'));
 
 app.get('/api/vehicles', async (req, res) => {
     try {
-        // Dynamické vygenerování času zajistí, že dostaneme vždy nová data
-        const timeParam = Date.now();
-        const url = `https://saraksti.lv/gpsdata.ashx?stopid=3014&time=${timeParam}`;
+        // Parametr s aktuálním časem zaručí, že stáhneme pokaždé nová data
+        const url = `https://saraksti.lv/gpsdata.ashx?gps&_=${Date.now()}`;
 
         const response = await axios.get(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Referer': 'https://saraksti.lv/riga/'
             },
             timeout: 15000
@@ -26,26 +25,29 @@ app.get('/api/vehicles', async (req, res) => {
         const rawData = response.data;
         const mapData = [];
         
-        // Zjištění struktury dat
-        let vehicleList = [];
-        if (Array.isArray(rawData)) {
-            vehicleList = rawData;
-        } else if (rawData && typeof rawData === 'object' && rawData.vehicles) {
-            vehicleList = rawData.vehicles;
-        } else if (typeof rawData === 'string') {
-            console.error("Data přišla jako čistý text, ukázka pro úpravu kódu:", rawData.substring(0, 150));
-        }
+        // Data nám chodí jako text, musíme je rozsekat po řádcích
+        const lines = typeof rawData === 'string' ? rawData.split('\n') : [];
 
-        vehicleList.forEach(v => {
-            // Inteligentní párování názvů kolonek, ať už se jmenují jakkoliv
-            const vehicleId = String(v.id || v.VehicleId || v.vehicleId || v.VehicleNo || v.vehicleno || "Neznámé");
-            const lat = parseFloat(v.lat || v.Latitude || v.latitude || v.y || 0);
-            const lng = parseFloat(v.lng || v.Longitude || v.longitude || v.x || 0);
-            const linka = String(v.route || v.Route || v.routeId || v.line || "N/A");
-            const rychlost = parseFloat(v.speed || v.Speed || 0);
+        lines.forEach(line => {
+            const cols = line.trim().split(',');
+            
+            // Každý správný řádek musí mít dostatek sloupečků
+            if (cols.length < 8) return; 
 
-            if (lat === 0 || lng === 0) return; // Ochrana před chybou GPS
+            // Získání dat z konkrétních sloupců (podle vašeho vzorku)
+            const linka = cols[1];
+            const lngRaw = parseInt(cols[2], 10);
+            const latRaw = parseInt(cols[3], 10);
+            const vehicleId = cols[7]; // Evidenční číslo
 
+            // Ochrana před chybami
+            if (!latRaw || !lngRaw || !vehicleId) return;
+
+            // Vrácení desetinné čárky do souřadnic
+            const lat = latRaw / 1000000;
+            const lng = lngRaw / 1000000;
+
+            // Spárování s vaší databází vozů podle čísla
             const dbInfo = vehicleDb[vehicleId] || { typ: "Neznámý typ", trakce: "Neznámá" };
 
             mapData.push({
@@ -53,7 +55,7 @@ app.get('/api/vehicles', async (req, res) => {
                 lat: lat,
                 lng: lng,
                 linka: linka,
-                rychlost: rychlost,
+                rychlost: 0, // V těchto zkrácených datech rychlost neposílají, proto bude 0
                 typ: dbInfo.typ,
                 trakce: dbInfo.trakce
             });
