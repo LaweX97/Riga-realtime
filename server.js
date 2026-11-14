@@ -10,7 +10,7 @@ app.use(express.static('public'));
 const vehicleDb = JSON.parse(fs.readFileSync('vehicles.json', 'utf8'));
 
 // VLOŽTE ZDE VÁŠ ODKAZ Z GOOGLU (ten co končí na /exec)
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRgbRaEFvD3MGzqBdduqRFyHcMCoXGAJ_I8OrFXrq45eH-eez2yydPo_cx7V_tbxyc/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAllw6jklnjF--Vkc3HWJItAyKSvRUKuRZtllNi7Ece4YZcC_PXGlL7XSLMdBoURnw/exec';
 
 app.get('/api/vehicles', async (req, res) => {
     try {
