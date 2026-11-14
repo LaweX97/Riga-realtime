@@ -60,9 +60,8 @@
 
                 resultDiv.textContent = '2/2 Stahuji GPS přes proxy...';
 
-                // 2. Stahování přes proxy s lepším ošetřením
-                const targetUrl = `https://saraksti.lv/gpsdata.ashx?gps&_=${Date.now()}`;
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+                // Soukromý Google můstek, který obejde veškeré blokace
+                const proxyUrl = 'https://script.google.com/macros/s/AKfycbzRgbRaEFvD3MGzqBdduqRFyHcMCoXGAJ_I8OrFXrq45eH-eez2yydPo_cx7V_tbxyc/exec';
 
                 const gpsResponse = await fetch(proxyUrl);
                 
