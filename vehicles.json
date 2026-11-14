@@ -1,0 +1,5 @@
+{
+  "57124": { "typ": "Škoda 15T ForCity Alfa", "trakce": "Tramvaj", "nizkopodlazni": true },
+  "76543": { "typ": "Solaris Urbino 18", "trakce": "Autobus", "nizkopodlazni": true },
+  "19123": { "typ": "Škoda 27Tr Solaris", "trakce": "Trolejbus", "nizkopodlazni": true }
+}
