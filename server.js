@@ -14,7 +14,7 @@ app.get('/api/vehicles', async (req, res) => {
         // Cílová adresa s aktuálním časem
         const targetUrl = `https://saraksti.lv/gpsdata.ashx?gps&_=${Date.now()}`;
         // Použití proxy AllOrigins, která maskuje cloudové servery
-        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        const url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
 
         console.log("Stahuji data z:", url);
 
@@ -22,7 +22,7 @@ app.get('/api/vehicles', async (req, res) => {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             },
-            timeout: 15000
+            timeout: 30000
         });
 
         const rawData = response.data;
