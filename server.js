@@ -9,17 +9,22 @@ app.use(express.static('public'));
 
 const vehicleDb = JSON.parse(fs.readFileSync('vehicles.json', 'utf8'));
 
-// VLOŽTE ZDE VÁŠ ODKAZ Z GOOGLU (ten co končí na /exec)
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAllw6jklnjF--Vkc3HWJItAyKSvRUKuRZtllNi7Ece4YZcC_PXGlL7XSLMdBoURnw/exec';
-
 app.get('/api/vehicles', async (req, res) => {
     try {
-        // Náš Render server volá Google, čímž obejde ochranu v Safari
-        const response = await axios.get(GOOGLE_SCRIPT_URL, { timeout: 15000 });
-        const rawData = response.data;
+        // Voláme Rigu napřímo s klíčovou hlavičkou, která odemkne data
+        const response = await axios.get('https://saraksti.lv/gpsdata.ashx?gps', {
+            headers: {
+                'Origin-Custom': 'saraksti.lv',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            timeout: 15000
+        });
+        
+        const rawText = response.data;
         const mapData = [];
         
-        const lines = typeof rawData === 'string' ? rawData.split('\n') : [];
+        // Zpracování textu z Rigy
+        const lines = typeof rawText === 'string' ? rawText.split('\n') : [];
         
         lines.forEach(line => {
             const cols = line.trim().split(',');
@@ -41,8 +46,8 @@ app.get('/api/vehicles', async (req, res) => {
 
         res.json(mapData);
     } catch (error) {
-        console.error("Chyba přes Google:", error.message);
-        res.status(500).json({ error: error.message });
+        console.error("Chyba spojení s Rigou:", error.message);
+        res.status(500).json({ error: "Nelze stáhnout data z Rigy." });
     }
 });
 
