@@ -43,18 +43,56 @@
         L.control.zoom({ position: 'bottomright' }).addTo(map);
         
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+            attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
         let vehicleMarkers = {};
 
         async function fetchVehicles() {
             try {
-                const response = await fetch('/api/vehicles'); 
-                const vehicles = await response.json();
-                updateMap(vehicles);
+                // 1. Telefon si stáhne vaši databázi typů vozů z vašeho Render serveru
+                const dbResponse = await fetch('/api/db');
+                const vehicleDb = await dbResponse.json();
+
+                // 2. Telefon si stáhne živé GPS polohy napřímo z Rigy (obejde cloud)
+                const gpsResponse = await fetch(`https://saraksti.lv/gpsdata.ashx?gps&_=${Date.now()}`);
+                const rawText = await gpsResponse.text();
+
+                const mapData = [];
+                const lines = rawText.split('\n');
+
+                lines.forEach(line => {
+                    const cols = line.trim().split(',');
+                    if (cols.length < 8) return; 
+
+                    const linka = cols[1];
+                    const lngRaw = parseInt(cols[2], 10);
+                    const latRaw = parseInt(cols[3], 10);
+                    const vehicleId = cols[7];
+
+                    if (!latRaw || !lngRaw || !vehicleId) return;
+
+                    // Vrácení desetinné čárky
+                    const lat = latRaw / 1000000;
+                    const lng = lngRaw / 1000000;
+
+                    // Spárování
+                    const dbInfo = vehicleDb[vehicleId] || { typ: "Neznámý typ", trakce: "Neznámá" };
+
+                    mapData.push({
+                        id: vehicleId,
+                        lat: lat,
+                        lng: lng,
+                        linka: linka,
+                        rychlost: 0,
+                        typ: dbInfo.typ,
+                        trakce: dbInfo.trakce
+                    });
+                });
+
+                updateMap(mapData);
             } catch (error) {
-                console.error("Chyba spojení:", error);
+                console.error("Chyba při stahování dat:", error);
             }
         }
 
@@ -65,8 +103,7 @@
                         <strong>Vůz: ${v.id}</strong><br>
                         Linka: <span class="bg-gray-200 px-1 rounded font-bold">${v.linka}</span><br>
                         Typ: ${v.typ}<br>
-                        Trakce: ${v.trakce}<br>
-                        Rychlost: ${Math.round(v.rychlost * 3.6)} km/h
+                        Trakce: ${v.trakce}
                     </div>
                 `;
 
@@ -92,8 +129,6 @@
         function searchVehicle() {
             const id = document.getElementById('searchInput').value.trim();
             const resultDiv = document.getElementById('searchResult');
-            
-            // Zrušení focusu po kliknutí schová klávesnici na iPhonu
             document.getElementById('searchInput').blur(); 
             
             if (vehicleMarkers[id]) {
