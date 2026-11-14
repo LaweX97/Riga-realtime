@@ -39,9 +39,19 @@ app.get('/api/vehicles', async (req, res) => {
 
             const lat = latRaw / 1000000;
             const lng = lngRaw / 1000000;
-            const dbInfo = vehicleDb[vehicleId] || { typ: "Neznámý typ", trakce: "Neznámá" };
+// Přiřazení dat z vaší databáze nebo výchozích hodnot, pokud vůz v JSONu ještě chybí
+            const dbInfo = vehicleDb[vehicleId] || { typ: "Neznámý", trakce: "Neznámá", rok: "Neznámý" };
 
-            mapData.push({ id: vehicleId, lat, lng, linka, rychlost: 0, typ: dbInfo.typ, trakce: dbInfo.trakce });
+            mapData.push({ 
+                id: vehicleId, 
+                lat, 
+                lng, 
+                linka, 
+                rychlost: 0, 
+                typ: dbInfo.typ, 
+                trakce: dbInfo.trakce,
+                rok: dbInfo.rok // Přidán rok výroby
+            });
         });
 
         res.json(mapData);
