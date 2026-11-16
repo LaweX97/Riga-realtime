@@ -76,18 +76,24 @@
                 if (v.linka) linkaSet.add(v.linka);
             });
         
-            // Pomocná funkce pro bezpečné naplnění roletky
+// Pomocná funkce pro bezpečné naplnění roletky s číselným řazením
             const updateSelect = (id, set, vychoziText) => {
                 const select = document.getElementById(id);
                 const currentVal = select.value;
                 select.innerHTML = `<option value="vse">${vychoziText}</option>`;
-                Array.from(set).sort().forEach(item => {
+                
+                // Přirozené číselné řazení (1, 2, 3, 10 místo 1, 10, 2, 3)
+                const polozky = Array.from(set).sort((a, b) => {
+                    return String(a).localeCompare(String(b), undefined, { numeric: true });
+                });
+
+                polozky.forEach(item => {
                     const opt = document.createElement('option');
                     opt.value = item;
                     opt.textContent = item;
                     select.appendChild(opt);
                 });
-                // Pokud byla vybrána hodnota a stále existuje, ponecháme ji
+                
                 if (set.has(currentVal)) select.value = currentVal;
             };
         
@@ -170,7 +176,11 @@
                     // Nejprve určíme barvu podle trakce nebo typu
                     let barvaBodu = '#f59e0b'; // Výchozí oranžová
                     
-                    if (v.typ && v.typ.toLowerCase().includes('elektrobus')) {
+                    // Bezpečná detekce: hledá slovo "elektrobus" v trakci i v typu (neřeší malá/velká písmena)
+                    const jeElektrobus = (v.trakce && v.trakce.toLowerCase().includes('elektrobus')) || 
+                                         (v.typ && v.typ.toLowerCase().includes('elektrobus'));
+
+                    if (jeElektrobus) {
                         barvaBodu = '#22c55e'; // Zelená pro elektrobus
                     } else if (v.trakce === 'Tramvaj') {
                         barvaBodu = '#ef4444'; // Červená pro tramvaj
