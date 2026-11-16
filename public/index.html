@@ -156,6 +156,10 @@
             }
         }
         function updateMap(vehicles) {
+            // 1. Vytvoříme si seznam ID všech vozů, které mají na mapě aktuálně být
+            const aktivniVozyId = new Set(vehicles.map(v => v.id));
+
+            // 2. Vykreslíme nebo zaktualizujeme vozy (váš původní kód)
             vehicles.forEach(v => {
                 const popupContent = `<b>Linka: ${v.linka}</b><br>Ev. č.: ${v.id}<br>Typ: ${v.typ}<br>Trakce: ${v.trakce}<br>Rok výroby: ${v.rok}`;
 
@@ -187,8 +191,16 @@
                     vehicleMarkers[v.id] = marker;
                 }
             });
-        }
 
+            // 3. Projdeme všechny staré značky a smažeme ty, které neprošly filtrem
+            for (const id in vehicleMarkers) {
+                if (!aktivniVozyId.has(id)) {
+                    map.removeLayer(vehicleMarkers[id]); // Odstraní tečku z mapy
+                    delete vehicleMarkers[id]; // Smaže záznam z paměti
+                }
+            }
+        }
+        
         function searchVehicle() {
             const id = document.getElementById('searchInput').value.trim();
             const resultDiv = document.getElementById('searchResult');
