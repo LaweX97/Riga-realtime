@@ -848,5 +848,8 @@
   "88024": { "typ": "Tatra T6B5SU", "trakce": "Tramvaj", "rok": "1990" },
   "88028": { "typ": "Tatra T6B5SU", "trakce": "Tramvaj", "rok": "1989" },
   "88033": { "typ": "Tatra T6B5SU", "trakce": "Tramvaj", "rok": "1989" },
-  "88034": { "typ": "Tatra T6B5SU", "trakce": "Tramvaj", "rok": "Neznámý" }
+  "88034": { "typ": "Tatra T6B5SU", "trakce": "Tramvaj", "rok": "Neznámý" },
+  "67057": { "typ": "Solaris Urbino 12 IV", "trakce": "Autobus", "rok": "2017" },
+  "17965": { "typ": "Škoda 27Tr Solaris III", "trakce": "Trolejbus", "rok": "2014" },
+  "22028": { "typ": "Solaris Trollino III 18,75 H2", "trakce": "Trolejbus", "rok": "2018" }
 }
